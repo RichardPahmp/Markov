@@ -50,6 +50,16 @@ impl Chain {
         ChainIterator::new(self, self.index_of(word))
     }
 
+    pub fn generate_sentence(&self, starting_word: Option<&str>) -> String {
+        match starting_word {
+            Some(word) => {
+                // TODO: Figure out how to end sentences.
+                self.generate_iter(word).take(25).join(" ")
+            }
+            None => todo!(),
+        }
+    }
+
     pub(crate) fn get_full(&self, idx: usize) -> Option<(&str, &Node)> {
         self.map.get_index(idx).map(|(k, v)| (k.as_str(), v))
     }
