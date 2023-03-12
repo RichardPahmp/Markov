@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 pub struct Node {
     weights: FxHashMap<usize, usize>,
     total_weight: usize,
+    pub(crate) is_sentence_end: bool,
 }
 
 impl Node {

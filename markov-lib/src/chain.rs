@@ -1,6 +1,8 @@
 use fxhash::FxBuildHasher;
+use indexmap::IndexSet;
+use rand::Rng;
 
-use crate::{node::Node, ChainIterator};
+use crate::{is_sentence_end, node::Node, ChainIterator};
 use itertools::Itertools;
 
 #[cfg(feature = "serde")]
@@ -12,13 +14,23 @@ type IndexMap<K, V> = indexmap::IndexMap<K, V, FxBuildHasher>;
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Chain {
     map: IndexMap<String, Node>,
+    starter_words: IndexSet<usize>,
 }
 
 impl Chain {
     pub fn feed(&mut self, string: &str) {
         for (current_word, next_word) in string.split_whitespace().tuple_windows() {
+            let current_is_end = is_sentence_end(current_word);
+
             let (next_idx, _) = self.get_or_insert_mut(next_word);
+            if current_is_end {
+                self.starter_words.insert(next_idx);
+            }
+
             let (_, current_node) = self.get_or_insert_mut(current_word);
+            if current_is_end {
+                current_node.is_sentence_end = true;
+            }
             current_node.add(next_idx);
         }
     }
@@ -46,22 +58,26 @@ impl Chain {
         }
     }
 
-    pub fn generate_iter<'a>(&'a self, word: &str) -> ChainIterator<'a> {
-        ChainIterator::new(self, self.index_of(word))
+    fn iter(&self, idx: usize) -> ChainIterator<'_> {
+        ChainIterator::new(self, idx)
     }
 
     pub fn generate_sentence(&self, starting_word: Option<&str>) -> String {
-        match starting_word {
-            Some(word) => {
-                // TODO: Figure out how to end sentences.
-                self.generate_iter(word).take(25).join(" ")
-            }
-            None => todo!(),
-        }
+        let starting_word = starting_word
+            .and_then(|word| self.index_of(word))
+            .unwrap_or_else(|| self.get_random_starter_word());
+        self.iter(starting_word).join(" ")
     }
 
     pub(crate) fn get_full(&self, idx: usize) -> Option<(&str, &Node)> {
         self.map.get_index(idx).map(|(k, v)| (k.as_str(), v))
+    }
+
+    fn get_random_starter_word(&self) -> usize {
+        *self
+            .starter_words
+            .get_index(rand::thread_rng().gen_range(0..self.starter_words.len()))
+            .unwrap()
     }
 }
 

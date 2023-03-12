@@ -2,7 +2,7 @@ use std::{fs, path::PathBuf};
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
-use markov_cli::{commands::generate, load_chain, load_chainfile, write_chain};
+use markov_cli::{commands::generate, load_chain, write_chain};
 use markov_lib::Chain;
 
 #[derive(Parser, Debug)]
@@ -34,9 +34,6 @@ enum Commands {
         number: usize,
         /// Start each sentence from a given word
         starting_word: Option<String>,
-        /// Save the output to a file
-        #[arg(short, long)]
-        output: Option<PathBuf>,
     },
     Debug,
 }
@@ -58,12 +55,10 @@ pub fn main() -> Result<()> {
         Commands::Generate {
             starting_word,
             number,
-            output,
         } => {
             let chain = load_chain(&args.chainfile)?;
-            let starting_word = starting_word.unwrap();
             for _ in 0..number {
-                println!("{}", generate(&chain, Some(&starting_word)));
+                println!("{}", generate(&chain, starting_word.as_deref()));
             }
         }
         Commands::Debug => {
