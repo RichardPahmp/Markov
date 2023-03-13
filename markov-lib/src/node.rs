@@ -76,9 +76,9 @@ mod tests {
         node.add_weight(1, 2);
         node.add_weight(2, 2);
         node.add_weight(3, 1);
-        assert_eq!(node.get_weighted(4), Some(2));
-        assert_eq!(node.get_weighted(5), Some(3));
-        assert_eq!(node.get_weighted(6), None);
+        assert_eq!(node.get_weighted(3), Some(2));
+        assert_eq!(node.get_weighted(4), Some(3));
+        assert_eq!(node.get_weighted(5), None);
         assert_eq!(node.total_weight, 5);
     }
 

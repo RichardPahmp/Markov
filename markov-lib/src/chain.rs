@@ -84,8 +84,6 @@ impl Chain {
 #[cfg(test)]
 
 mod tests {
-    use itertools::Itertools;
-
     use crate::Chain;
 
     #[test]
@@ -105,15 +103,15 @@ mod tests {
         let mut chain = Chain::default();
         chain.feed("henlo stinky lizer");
         assert_eq!(
-            vec!["henlo", "stinky", "lizer"],
-            chain.generate_iter("henlo").collect::<Vec<_>>(),
+            String::from("henlo stinky lizer"),
+            chain.generate_sentence(Some("henlo")),
         )
     }
 
     #[test]
     fn generate_empty_iter() {
         let chain = Chain::default();
-        assert_eq!(chain.generate_iter("hello").next(), None);
+        assert_eq!(chain.generate_sentence(Some("hello")), String::from(""));
     }
 
     #[test]
@@ -132,43 +130,5 @@ mod tests {
         assert_eq!(chain.weight_between("stinky", "boy"), Some(1));
         assert_eq!(chain.weight_between("stinky", "lizer"), Some(1));
         assert_eq!(chain.weight_between("stinky", "stinky"), Some(5));
-    }
-
-    #[test]
-    fn test() {
-        let mut chain = Chain::default();
-        chain.feed("henlo stinky");
-        chain.feed("henlo lizer");
-        chain.feed("henlo boy");
-        chain.feed("stinky lizer");
-        chain.feed("stinky boy");
-        chain.feed("stinky stinky");
-        for _ in 0..20 {
-            println!("{}", chain.generate_iter("henlo").join(" "));
-        }
-    }
-
-    #[test]
-    fn testing() {
-        let mut chain = Chain::default();
-        chain.feed("stinky boy");
-        chain.feed("stinky lizer");
-        chain.feed("stinky pinky");
-        let mut boy_count = 0;
-        let mut lizer_count = 0;
-        let mut pinky_count = 0;
-        for _ in 0..100000 {
-            let string = chain.generate_iter("stinky").skip(1).next().unwrap();
-            match string {
-                "boy" => boy_count += 1,
-                "lizer" => lizer_count += 1,
-                "pinky" => pinky_count += 1,
-                _ => panic!(),
-            }
-        }
-        println!(
-            "boy: {}, lizer: {}, pinky: {}",
-            boy_count, lizer_count, pinky_count
-        );
     }
 }
